@@ -27,7 +27,7 @@ open http://localhost:8501
 | サービス | ポート | 説明 |
 |---------|--------|------|
 | EDC Connector | 19193 | EDC管理API |
-| Data Server | 7080 | サンプルデータサーバー |
+| Data Server | 8000 | サンプルデータサーバー |
 | EDC Simple UI | 8501 | Streamlit操作UI |
 
 ## 🔄 操作フロー
@@ -44,27 +44,13 @@ open http://localhost:8501
 
 ```bash
 # サービス起動
-docker compose up -d
+docker compose up -d --build
 
 # ログ確認
 docker compose logs -f
 
 # サービス停止
 docker compose down
-```
-
-### 手動初期化
-
-```bash
-# Asset作成
-curl -X POST http://localhost:19193/management/v3/assets \
-  -H 'Content-Type: application/json' \
-  -d @sample-asset.json
-
-# Policy作成  
-curl -X POST http://localhost:19193/management/v3/policydefinitions \
-  -H 'Content-Type: application/json' \
-  -d @sample-policy.json
 ```
 
 ## 🔧 トラブルシューティング
@@ -79,12 +65,6 @@ curl http://localhost:8501
 # コンテナ状態
 docker compose ps
 ```
-
-### よくある問題
-- **ポート競合**: ポート 19193, 7080, 8501 が使用済みの場合
-- **起動時間**: 初回起動は1-2分かかる場合があります  
-- **ネットワーク**: コンテナ間通信でedc-networkを使用
-- **企業環境**: プロキシ証明書が必要な場合は手動で追加
 
 ## 📚 API 参考
 
