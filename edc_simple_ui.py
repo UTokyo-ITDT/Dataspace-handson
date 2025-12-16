@@ -353,24 +353,71 @@ def evaluate_policy_for_participant(policy_obj, participant_id):
     if not policy_obj or not participant_id:
         return True, "No policy constraints"
     
-    permissions = policy_obj.get("odrl:permission", [])
+    # permissionは単一オブジェクトの場合もあるし、配列の場合もある
+    permissions_raw = policy_obj.get("odrl:permission", [])
+    if isinstance(permissions_raw, dict):
+        # 単一オブジェクトの場合は配列にラップ
+        permissions = [permissions_raw]
+    elif isinstance(permissions_raw, list):
+        permissions = permissions_raw
+    else:
+        return True, "No permissions defined"
+    
     if not permissions:
         return True, "No permissions defined"
     
+    def check_constraint(constraint):
+        """制約をチェックするヘルパー関数"""
+        left_operand = constraint.get("odrl:leftOperand")
+        operator = constraint.get("odrl:operator", {})
+        right_operand = constraint.get("odrl:rightOperand")
+        
+        # left_operandがオブジェクト形式の場合、@idを取得
+        if isinstance(left_operand, dict):
+            left_operand_value = left_operand.get("@id", "")
+        else:
+            left_operand_value = left_operand
+        
+        # operatorがオブジェクト形式の場合、@idを取得
+        if isinstance(operator, dict):
+            operator_value = operator.get("@id", "")
+        else:
+            operator_value = operator
+        
+        # participantId制約をチェック（複数の形式に対応）
+        participant_id_patterns = [
+            "https://w3id.org/edc/v0.0.1/ns/participantId",
+            "edc:participantId", 
+            "participantId"
+        ]
+        
+        if left_operand_value in participant_id_patterns:
+            if operator_value in ["odrl:eq", "EQ", "eq"]:
+                if right_operand == participant_id:
+                    return True, f"✅ Participant ID matches: {right_operand}"
+                else:
+                    return False, f"❌ Participant ID mismatch. Required: {right_operand}, Your ID: {participant_id}"
+        
+        return None, None
+    
     for permission in permissions:
         if isinstance(permission, dict):
+            # 単一制約の場合
             constraint = permission.get("odrl:constraint", {})
             if constraint:
-                left_operand = constraint.get("odrl:leftOperand")
-                operator = constraint.get("odrl:operator", {}).get("@id")
-                right_operand = constraint.get("odrl:rightOperand")
-                
-                if left_operand == "https://w3id.org/edc/v0.0.1/ns/participantId":
-                    if operator == "odrl:eq":
-                        if right_operand == participant_id:
-                            return True, f"✅ Participant ID matches: {right_operand}"
-                        else:
-                            return False, f"❌ Participant ID mismatch. Required: {right_operand}, Your ID: {participant_id}"
+                result, message = check_constraint(constraint)
+                if result is not None:
+                    return result, message
+            
+            # 複数制約の場合（constraintsが配列）
+            constraints = permission.get("odrl:constraints", [])
+            if not constraints:
+                constraints = permission.get("constraints", [])
+            
+            for constraint in constraints:
+                result, message = check_constraint(constraint)
+                if result is not None:
+                    return result, message
     
     return True, "No participant constraints found"
 
@@ -489,6 +536,10 @@ def fetch_catalog():
                                         st.write(f"🔗 **Offer ID:** `{offer_id}`")
                                         
                                         # Evaluate policy for consumer
+                                        if st.session_state.get("debug_mode"):
+                                            st.write("**🔍 Policy Debug - Offer Structure:**")
+                                            st.json(offer)
+                                        
                                         can_access, evaluation_msg = evaluate_policy_for_participant(
                                             offer, consumer_participant_id
                                         )

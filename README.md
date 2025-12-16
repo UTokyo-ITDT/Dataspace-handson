@@ -11,14 +11,26 @@
 
 ## 🚀 クイックスタート
 
+まず、`.env`および`configuration.properties`に自分のParticipant idおよびFQDNを記入します。
+<YOUR_PARTICIPANT_ID>と<YOUR_FQDN>をそれぞれ自身の値に置換してください。
+
 ```bash
-# ディレクトリに移動
-cd edc-simple
+# 自分のParticipant id、FQDNを設定ファイルに記載
+cp .env.sample .env
+vi .env
 
-# サービス起動（自動初期化付き）
+cd connector/configuration
+cp configuration.properties.sample configuration.properties
+vi configuration.properties
+```
+
+次に、セットアップシェルでサービスを起動します。
+```
 ./setup.sh
+```
 
-# ブラウザでアクセス
+ブラウザでアクセスすると、コネクタ操作用のUIを確認できます。
+```
 open http://localhost:8501
 ```
 

@@ -1,0 +1,26 @@
+# EDC Configuration - Environment Variable Based
+# Participant Identity
+edc.participant.id=${EDC_PARTICIPANT_ID:<YOUR_PARTICIPANT_ID>}
+edc.dsp.callback.address=${EDC_DSP_CALLBACK_ADDRESS:http://<YOUR_FQDN>:19194/protocol}
+
+# Web HTTP Configuration
+web.http.port=19191
+web.http.path=/api
+web.http.management.port=19193
+web.http.management.path=/management
+web.http.protocol.port=19194
+web.http.protocol.path=/protocol
+
+# Control Plane
+web.http.control.port=19192
+web.http.control.path=/control
+
+# Data Plane
+web.http.public.port=19291
+web.http.public.path=/public
+edc.dataplane.api.public.baseurl=${EDC_DATAPLANE_PUBLIC_URL:http://<YOUR_FQDN>:19291/public}
+edc.dataplane.api.public.baseurl=${EDC_DATAPLANE_PUBLIC_URL:http://<YOUR_FQDN>:19291/public}
+
+# Security
+edc.transfer.proxy.token.signer.privatekey.alias=private-key
+edc.transfer.proxy.token.verifier.publickey.alias=public-key
