@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+  },
+  "@type": "ContractDefinition",
+  "@id": "contract-def-1",
+  "accessPolicyId": "allow-all-policy",
+  "contractPolicyId": "allow-all-policy",
+  "assetsSelector": []
+}

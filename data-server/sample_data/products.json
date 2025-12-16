@@ -1,0 +1,47 @@
+[
+  {
+    "product_id": "P001",
+    "name": "ワイヤレスイヤホン",
+    "category": "Electronics",
+    "price": 15000,
+    "stock": 45,
+    "manufacturer": "TechCorp",
+    "description": "高品質なワイヤレスイヤホン。ノイズキャンセリング機能付き。"
+  },
+  {
+    "product_id": "P002", 
+    "name": "スマートウォッチ",
+    "category": "Electronics",
+    "price": 35000,
+    "stock": 23,
+    "manufacturer": "WearTech",
+    "description": "健康管理機能を搭載したスマートウォッチ。防水仕様。"
+  },
+  {
+    "product_id": "P003",
+    "name": "USB充電器",
+    "category": "Accessories",
+    "price": 2500,
+    "stock": 120,
+    "manufacturer": "PowerPlus",
+    "description": "急速充電対応のUSB充電器。複数デバイス対応。"
+  },
+  {
+    "product_id": "P004",
+    "name": "Bluetooth スピーカー",
+    "category": "Electronics", 
+    "price": 8500,
+    "stock": 67,
+    "manufacturer": "SoundMax",
+    "description": "高音質Bluetoothスピーカー。防水・防塵仕様。"
+  },
+  {
+    "product_id": "P005",
+    "name": "モバイルバッテリー",
+    "category": "Accessories",
+    "price": 4200,
+    "stock": 89,
+    "manufacturer": "PowerPlus",
+    "description": "大容量モバイルバッテリー。急速充電対応。"
+  }
+]

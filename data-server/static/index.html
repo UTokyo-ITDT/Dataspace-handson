@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDC Data Upload Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .upload-section, .files-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .upload-form {
+            display: grid;
+            gap: 15px;
+            max-width: 500px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input, textarea, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .file-item h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .file-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .file-actions {
+            margin-top: 10px;
+        }
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .data-preview {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .api-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .api-endpoints {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .endpoint-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #007bff;
+        }
+        .endpoint-url {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+        .endpoint-description {
+            color: #666;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .copy-btn {
+            font-size: 10px;
+            padding: 2px 6px;
+            margin-left: 5px;
+        }
+        .format-options {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .format-btn {
+            font-size: 10px;
+            padding: 3px 8px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .format-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EDC Data Upload Interface</h1>
+        
+        <div class="upload-section">
+            <h2>ファイルアップロード</h2>
+            <form class="upload-form" id="uploadForm">
+                <div class="form-group">
+                    <label for="file">ファイル選択 (CSV, JSON, Excel, TXT)</label>
+                    <input type="file" id="file" name="file" accept=".csv,.json,.xlsx,.txt" required>
+                </div>
+                <div class="form-group">
+                    <label for="title">タイトル</label>
+                    <input type="text" id="title" name="title" placeholder="データセットのタイトル">
+                </div>
+                <div class="form-group">
+                    <label for="description">説明</label>
+                    <textarea id="description" name="description" rows="3" placeholder="データの説明"></textarea>
+                </div>
+                <button type="submit" id="uploadBtn">アップロード</button>
+            </form>
+            <div id="uploadStatus"></div>
+        </div>
+
+        <div class="files-section">
+            <h2>アップロード済みファイル</h2>
+            <button onclick="loadFiles()">ファイル一覧を更新</button>
+            <div id="filesList"></div>
+        </div>
+
+        <div class="api-info">
+            <h3>API エンドポイント</h3>
+            <div>
+                <strong>ファイル一覧:</strong> GET /files/list<br>
+                <strong>ファイルデータ:</strong> GET /files/{file_id}/data<br>
+                <strong>ファイルダウンロード:</strong> GET /files/{file_id}/download<br>
+                <strong>ファイル削除:</strong> DELETE /files/{file_id}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        
+        // ファイルアップロード
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'アップロード中...';
+            
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+            formData.append('title', document.getElementById('title').value);
+            formData.append('description', document.getElementById('description').value);
+            
+            try {
+                const response = await fetch('/files/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status success">アップロード成功: ${result.filename}</div>`;
+                    document.getElementById('uploadForm').reset();
+                    loadFiles(); // ファイル一覧を更新
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">エラー: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">エラー: ${error.message}</div>`;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'アップロード';
+            }
+        });
+        
+        // ファイル一覧読み込み
+        async function loadFiles() {
+            const filesDiv = document.getElementById('filesList');
+            filesDiv.innerHTML = '<p>読み込み中...</p>';
+            
+            try {
+                const response = await fetch('/files/list');
+                const result = await response.json();
+                
+                if (response.ok && result.data.length > 0) {
+                    let html = '<div class="file-list">';
+                    for (const file of result.data) {
+                        html += `
+                            <div class="file-item">
+                                <h3>${file.title}</h3>
+                                <div class="file-info">
+                                    <div><strong>ファイル名:</strong> ${file.filename}</div>
+                                    <div><strong>サイズ:</strong> ${formatFileSize(file.file_size)}</div>
+                                    <div><strong>アップロード日:</strong> ${formatDate(file.upload_time)}</div>
+                                </div>
+                                ${file.description ? `<p><strong>説明:</strong> ${file.description}</p>` : ''}
+                                <div class="file-actions">
+                                    <button class="btn-small btn-success" onclick="previewData('${file.id}')">データプレビュー</button>
+                                    <button class="btn-small" onclick="showApiEndpoints('${file.id}')">データ共有URLを表示</button>
+                                    <button class="btn-small" onclick="downloadFile('${file.id}')">ダウンロード</button>
+                                    <button class="btn-small btn-danger" onclick="deleteFile('${file.id}')">削除</button>
+                                </div>
+                                <div id="preview-${file.id}" class="data-preview" style="display: none;"></div>
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                    filesDiv.innerHTML = html;
+                } else {
+                    filesDiv.innerHTML = '<p>アップロードされたファイルがありません</p>';
+                }
+            } catch (error) {
+                filesDiv.innerHTML = `<div class="status error">エラー: ${error.message}</div>`;
+            }
+        }
+        
+        // データプレビュー
+        async function previewData(fileId) {
+            const previewDiv = document.getElementById(`preview-${fileId}`);
+            
+            if (previewDiv.style.display === 'none') {
+                previewDiv.innerHTML = '<p>読み込み中...</p>';
+                previewDiv.style.display = 'block';
+                
+                try {
+                    const response = await fetch(`/files/${fileId}/data?limit=10`);
+                    const result = await response.json();
+                    
+                    if (response.ok && result.data.length > 0) {
+                        const data = result.data;
+                        const keys = Object.keys(data[0]);
+                        
+                        let html = `<h4>データプレビュー (最初の10件)</h4>`;
+                        html += `<table class="data-table">`;
+                        html += `<thead><tr>${keys.map(key => `<th>${key}</th>`).join('')}</tr></thead>`;
+                        html += `<tbody>`;
+                        for (const row of data) {
+                            html += `<tr>${keys.map(key => `<td>${row[key] || ''}</td>`).join('')}</tr>`;
+                        }
+                        html += `</tbody></table>`;
+                        html += `<p><strong>合計レコード数:</strong> ${result.pagination.total}</p>`;
+                        
+                        previewDiv.innerHTML = html;
+                    } else {
+                        previewDiv.innerHTML = '<p>データを読み込めませんでした</p>';
+                    }
+                } catch (error) {
+                    previewDiv.innerHTML = `<p>エラー: ${error.message}</p>`;
+                }
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+        
+        // API情報表示
+        async function showApiEndpoints(fileId) {
+            const previewDiv = document.getElementById(`preview-${fileId}`);
+            
+            if (previewDiv.style.display === 'none' || !previewDiv.innerHTML.includes('API エンドポイント')) {
+                previewDiv.innerHTML = '<p>API情報を読み込み中...</p>';
+                previewDiv.style.display = 'block';
+                
+                try {
+                    const apiHtml = await generateApiEndpointsHtml(fileId);
+                    previewDiv.innerHTML = apiHtml;
+                } catch (error) {
+                    previewDiv.innerHTML = `<p>API情報の読み込みに失敗しました: ${error.message}</p>`;
+                }
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+        
+        // グローバル設定変数
+        let apiConfig = null;
+        
+        // API設定を取得
+        async function loadApiConfig() {
+            if (!apiConfig) {
+                try {
+                    const response = await fetch('/config');
+                    apiConfig = await response.json();
+                } catch (error) {
+                    console.warn('Failed to load API config, using defaults:', error);
+                    apiConfig = {
+                        fqdn: 'sample-participant-1.handson.dataspace.internal',
+                        base_url: 'http://sample-participant-1.handson.dataspace.internal',
+                        reverse_proxy: true
+                    };
+                }
+            }
+            return apiConfig;
+        }
+        
+        // API エンドポイント HTML生成
+        async function generateApiEndpointsHtml(fileId) {
+            const config = await loadApiConfig();
+            const baseUrl = config.base_url;
+            
+            return `
+                <div class="api-endpoints">
+                    <h4>API エンドポイント (VPN経由アクセス)</h4>
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                        <strong>🔗 ベースURL:</strong> <code>${baseUrl}</code><br>
+                        <small>VPNに接続してからアクセスしてください</small>
+                    </div>
+                    
+                    <div class="endpoint-item">
+                        <strong>📊 データ取得 URL</strong>
+                        <div class="endpoint-description">構造化されたデータをJSON形式で取得</div>
+                        <div class="endpoint-url">
+                            GET ${baseUrl}:8000/files/${fileId}/data
+                            <button class="copy-btn" onclick="copyToClipboard('${baseUrl}:8000/files/${fileId}/data')">Copy</button>
+                        </div>
+                        <div class="endpoint-description">
+                            パラメータ: ?limit=100&offset=0
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button class="format-btn" onclick="testApiEndpoint('${baseUrl}:8000/files/${fileId}/data?limit=5')">テスト実行</button>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-item">
+                        <strong>👁️ ビュー URL</strong>
+                        <div class="endpoint-description">データを指定形式で表示</div>
+                        <div class="endpoint-url">
+                            GET ${baseUrl}:8000/files/${fileId}/view?format=FORMAT
+                            <button class="copy-btn" onclick="copyToClipboard('${baseUrl}:8000/files/${fileId}/view')">Copy</button>
+                        </div>
+                        <div class="format-options">
+                            <button class="format-btn" onclick="testApiEndpoint('${baseUrl}:8000/files/${fileId}/view?format=json&limit=5')">JSON</button>
+                            <button class="format-btn" onclick="testApiEndpoint('${baseUrl}:8000/files/${fileId}/view?format=csv&limit=5')">CSV</button>
+                            <button class="format-btn" onclick="testApiEndpoint('${baseUrl}:8000/files/${fileId}/view?format=html&limit=5')">HTML</button>
+                            <button class="format-btn" onclick="testApiEndpoint('${baseUrl}:8000/files/${fileId}/view?format=raw')">RAW</button>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-item">
+                        <strong>⬇️ ダウンロード URL</strong>
+                        <div class="endpoint-description">元ファイルをそのままダウンロード</div>
+                        <div class="endpoint-url">
+                            GET ${baseUrl}:8000/files/${fileId}/download
+                            <button class="copy-btn" onclick="copyToClipboard('${baseUrl}:8000/files/${fileId}/download')">Copy</button>
+                        </div>
+                        <button class="btn-small" onclick="window.open('${baseUrl}:8000/files/${fileId}/download', '_blank')">ダウンロード実行</button>
+                    </div>
+                    
+                    <div class="endpoint-item">
+                        <strong>📋 cURL例</strong>
+                        <div class="endpoint-description">コマンドラインからの実行例</div>
+                        <div class="endpoint-url">
+                            curl -X GET "${baseUrl}:8000/files/${fileId}/data?limit=10"
+                            <button class="copy-btn" onclick="copyToClipboard('curl -X GET &quot;${baseUrl}:8000/files/${fileId}/data?limit=10&quot;')">Copy</button>
+                        </div>
+                        <div class="endpoint-url">
+                            curl -X GET "${baseUrl}:8000/files/${fileId}/view?format=json&limit=5"
+                            <button class="copy-btn" onclick="copyToClipboard('curl -X GET &quot;${baseUrl}:8000/files/${fileId}/view?format=json&amp;limit=5&quot;')">Copy</button>
+                        </div>
+                        <div class="endpoint-url">
+                            curl -X GET "${baseUrl}:8000/files/${fileId}/download" -o "downloaded_file"
+                            <button class="copy-btn" onclick="copyToClipboard('curl -X GET &quot;${baseUrl}:8000/files/${fileId}/download&quot; -o &quot;downloaded_file&quot;')">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="endpoint-item">
+                        <strong>🔧 Postman/インポート用</strong>
+                        <div class="endpoint-description">API テストツール用のURL</div>
+                        <div class="endpoint-url">
+                            データAPI: ${baseUrl}:8000/files/${fileId}/data{{?limit,offset}}
+                            <button class="copy-btn" onclick="copyToClipboard('${baseUrl}:8000/files/${fileId}/data{{?limit,offset}}')">Copy</button>
+                        </div>
+                        <div class="endpoint-url">
+                            ビューAPI: ${baseUrl}:8000/files/${fileId}/view{{?format,limit,offset}}
+                            <button class="copy-btn" onclick="copyToClipboard('${baseUrl}:8000/files/${fileId}/view{{?format,limit,offset}}')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // API エンドポイントテスト（汎用）
+        async function testApiEndpoint(fullUrl) {
+            // フルURLの場合は新しいタブで開く（CORS制限を回避）
+            if (fullUrl.startsWith('http')) {
+                window.open(fullUrl, '_blank');
+                return;
+            }
+            
+            // 相対URLの場合は既存の処理を実行
+            try {
+                const response = await fetch(fullUrl);
+                const result = await response.json();
+                
+                const newWindow = window.open('', '_blank');
+                const content = `
+                    <html>
+                        <head>
+                            <title>API Test Result</title>
+                            <style>
+                                body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+                                .container { background: white; padding: 20px; border-radius: 8px; }
+                                pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; }
+                                .url { background: #e9ecef; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h2>API Test Result</h2>
+                                <div class="url"><strong>URL:</strong> ${fullUrl}</div>
+                                <h3>Response:</h3>
+                                <pre>${JSON.stringify(result, null, 2)}</pre>
+                            </div>
+                        </body>
+                    </html>
+                `;
+                
+                newWindow.document.write(content);
+                newWindow.document.close();
+            } catch (error) {
+                alert(`API Test Error: ${error.message}\n\nフルURL: ${fullUrl}\n\nVPN接続を確認してください。`);
+            }
+        }
+        
+        // クリップボードにコピー
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('URLをクリップボードにコピーしました！');
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                // フォールバック
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('URLをコピーしました！');
+            }
+        }
+        
+        // ファイルダウンロード
+        function downloadFile(fileId) {
+            window.open(`/files/${fileId}/download`, '_blank');
+        }
+        
+        // ファイル削除
+        async function deleteFile(fileId) {
+            if (!confirm('このファイルを削除しますか？')) return;
+            
+            try {
+                const response = await fetch(`/files/${fileId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('ファイルが削除されました');
+                    loadFiles(); // 一覧を更新
+                } else {
+                    const result = await response.json();
+                    alert(`削除エラー: ${result.detail}`);
+                }
+            } catch (error) {
+                alert(`エラー: ${error.message}`);
+            }
+        }
+        
+        // ユーティリティ関数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('ja-JP');
+        }
+        
+        // ページ読み込み時にファイル一覧を読み込み
+        loadFiles();
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "@context": {
+    "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+  },
+  "@id": "sample-asset-1",
+  "properties": {
+    "name": "Sample Dataset",
+    "description": "A sample dataset for testing EDC operations",
+    "contenttype": "application/json"
+  },
+  "dataAddress": {
+    "type": "HttpData",
+    "name": "Sample Asset",
+    "baseUrl": "http://sample-participant-1.handson.dataspace.internal:7080/sample-data",
+    "proxyPath": "true"
+  }
+}

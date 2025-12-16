@@ -1,0 +1,11 @@
+id,name,email,country,age,department,salary,join_date
+1,田中 太郎,tanaka@example.com,Japan,28,Engineering,500000,2023-01-15
+2,佐藤 花子,sato@example.com,Japan,32,Marketing,450000,2022-05-20
+3,John Smith,john@example.com,USA,25,Sales,400000,2023-03-10
+4,Emma Wilson,emma@example.com,UK,29,Engineering,520000,2022-11-05
+5,Hans Mueller,hans@example.com,Germany,35,Product,600000,2021-08-15
+6,山田 次郎,yamada@example.com,Japan,26,Design,380000,2023-07-01
+7,李 美咲,li@example.com,China,31,Engineering,480000,2022-09-12
+8,Maria Garcia,maria@example.com,Spain,27,Marketing,420000,2023-02-28
+9,Ahmed Hassan,ahmed@example.com,Egypt,33,Sales,390000,2022-12-03
+10,Sophie Dubois,sophie@example.com,France,24,Design,350000,2023-04-18

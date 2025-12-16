@@ -1,0 +1,55 @@
+services:
+  # EDC Connector (Single instance for both provider and consumer operations)
+  edc-connector:
+    build:
+      context: ./connector
+      dockerfile: Dockerfile
+    container_name: edc-connector
+    ports:
+      - "19193:19193"  # Management API
+      - "19194:19194"  # Protocol API
+      - "19291:19291"  # Dataplane API
+    networks:
+      - edc-network
+    environment:
+      - EDC_PARTICIPANT_ID=${PARTICIPANT_ID}
+      - EDC_DSP_CALLBACK_ADDRESS=http://${PARTICIPANT_FQDN}:19194/protocol
+      - EDC_DATAPLANE_PUBLIC_URL=http://${PARTICIPANT_FQDN}:19291/public
+    restart: unless-stopped
+
+  # EDC Simple UI
+  edc-simple-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edc-simple-ui
+    command: ["streamlit", "run", "edc_simple_ui.py"]
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    networks:
+      - edc-network
+    depends_on:
+      - edc-connector
+    restart: unless-stopped
+  data-api:
+    build: ./data-server
+    restart: 'always'
+    networks:
+      - edc-network
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - PARTICIPANT_FQDN=${PARTICIPANT_FQDN}
+    volumes:
+      - data_api_storage:/app/uploaded_data
+volumes:  
+  data_api_storage:
+    driver: 'local'
+networks:
+  edc-network:
+    driver: bridge
+    name: edc-network
