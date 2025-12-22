@@ -71,7 +71,7 @@ docker compose down
 ```bash
 # ヘルスチェック
 curl http://localhost:19193/health
-curl http://localhost:7080/health
+curl http://localhost:8000/health
 curl http://localhost:8501
 
 # コンテナ状態
@@ -81,12 +81,12 @@ docker compose ps
 ## 📚 API 参考
 
 - EDC Management API: `http://localhost:19193/management/v3/`
-- Data Server: `http://localhost:7080/`
+- Data Server: `http://localhost:8000/`
 - UI: `http://localhost:8501`
 
 ## 🎓 学習用途
 
-このプロジェクトは以下の学習に最適です：
+このプロジェクトは以下の学習に最適です。
 - EDCの基本概念理解
 - データスペースプロトコルの動作確認
 - コントラクト交渉フローの体験
