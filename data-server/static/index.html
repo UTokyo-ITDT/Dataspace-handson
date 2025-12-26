@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDC Data Upload Interface</title>
+    <title>Simple Data Server</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -207,10 +207,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>EDC Data Upload Interface</h1>
+        <h1>Simple Data Server</h1>
         
         <div class="upload-section">
-            <h2>ファイルアップロード</h2>
+            <h2>ファイル保存</h2>
             <form class="upload-form" id="uploadForm">
                 <div class="form-group">
                     <label for="file">ファイル選択 (CSV, JSON, Excel, TXT)</label>
@@ -224,13 +224,13 @@
                     <label for="description">説明</label>
                     <textarea id="description" name="description" rows="3" placeholder="データの説明"></textarea>
                 </div>
-                <button type="submit" id="uploadBtn">アップロード</button>
+                <button type="submit" id="uploadBtn">保存</button>
             </form>
             <div id="uploadStatus"></div>
         </div>
 
         <div class="files-section">
-            <h2>アップロード済みファイル</h2>
+            <h2>保存済みファイル</h2>
             <button onclick="loadFiles()">ファイル一覧を更新</button>
             <div id="filesList"></div>
         </div>
@@ -257,7 +257,7 @@
             const statusDiv = document.getElementById('uploadStatus');
             
             uploadBtn.disabled = true;
-            uploadBtn.textContent = 'アップロード中...';
+            uploadBtn.textContent = '保存中...';
             
             const formData = new FormData();
             formData.append('file', document.getElementById('file').files[0]);
@@ -273,7 +273,7 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    statusDiv.innerHTML = `<div class="status success">アップロード成功: ${result.filename}</div>`;
+                    statusDiv.innerHTML = `<div class="status success">保存成功: ${result.filename}</div>`;
                     document.getElementById('uploadForm').reset();
                     loadFiles(); // ファイル一覧を更新
                 } else {
@@ -283,7 +283,7 @@
                 statusDiv.innerHTML = `<div class="status error">エラー: ${error.message}</div>`;
             } finally {
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = 'アップロード';
+                uploadBtn.textContent = '保存';
             }
         });
         
@@ -305,7 +305,7 @@
                                 <div class="file-info">
                                     <div><strong>ファイル名:</strong> ${file.filename}</div>
                                     <div><strong>サイズ:</strong> ${formatFileSize(file.file_size)}</div>
-                                    <div><strong>アップロード日:</strong> ${formatDate(file.upload_time)}</div>
+                                    <div><strong>保存日:</strong> ${formatDate(file.save_time)}</div>
                                 </div>
                                 ${file.description ? `<p><strong>説明:</strong> ${file.description}</p>` : ''}
                                 <div class="file-actions">
@@ -321,7 +321,7 @@
                     html += '</div>';
                     filesDiv.innerHTML = html;
                 } else {
-                    filesDiv.innerHTML = '<p>アップロードされたファイルがありません</p>';
+                    filesDiv.innerHTML = '<p>保存されたファイルがありません</p>';
                 }
             } catch (error) {
                 filesDiv.innerHTML = `<div class="status error">エラー: ${error.message}</div>`;

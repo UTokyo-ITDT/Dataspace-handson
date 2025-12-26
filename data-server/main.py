@@ -19,16 +19,16 @@ from datetime import datetime
 from pathlib import Path
 
 app = FastAPI(
-    title="EDC Data Source API",
-    description="Simple data sharing API for Eclipse Data Connector with file upload",
+    title="Simple Data Server API",
+    description="Simple data sharing API for Eclipse Data Connector with file storage",
     version="1.0.0"
 )
 
 # データ保存用ディレクトリ
-DATA_DIR = Path("./uploaded_data")
+DATA_DIR = Path("./saved_data")
 DATA_DIR.mkdir(exist_ok=True)
-UPLOAD_DIR = DATA_DIR / "files"
-UPLOAD_DIR.mkdir(exist_ok=True)
+SAVE_DIR = DATA_DIR / "files"
+SAVE_DIR.mkdir(exist_ok=True)
 
 # CORS設定
 app.add_middleware(
@@ -44,25 +44,25 @@ static_dir = Path("./static")
 static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# アップロードされたファイルの情報を保存
-uploaded_files_registry = []
+# 保存されたファイルの情報を保存
+saved_files_registry = []
 
-def load_uploaded_files_registry():
-    """アップロードファイル情報を読み込み"""
-    global uploaded_files_registry
+def load_saved_files_registry():
+    """保存ファイル情報を読み込み"""
+    global saved_files_registry
     registry_file = DATA_DIR / "files_registry.json"
     if registry_file.exists():
         with open(registry_file, 'r', encoding='utf-8') as f:
-            uploaded_files_registry = json.load(f)
+            saved_files_registry = json.load(f)
 
-def save_uploaded_files_registry():
-    """アップロードファイル情報を保存"""
+def save_saved_files_registry():
+    """保存ファイル情報を保存"""
     registry_file = DATA_DIR / "files_registry.json"
     with open(registry_file, 'w', encoding='utf-8') as f:
-        json.dump(uploaded_files_registry, f, ensure_ascii=False, indent=2)
+        json.dump(saved_files_registry, f, ensure_ascii=False, indent=2)
 
 # 起動時にレジストリを読み込み
-load_uploaded_files_registry()
+load_saved_files_registry()
 
 @app.get("/")
 async def redirect_to_console():
@@ -80,7 +80,7 @@ async def upload_file(
     title: str = Form(None),
     description: str = Form(None)
 ):
-    """ファイルをアップロード"""
+    """ファイルを保存"""
     try:
         # ファイル情報
         file_id = str(uuid.uuid4())
@@ -96,7 +96,7 @@ async def upload_file(
             )
         
         # ファイル保存
-        file_path = UPLOAD_DIR / f"{file_id}_{filename}"
+        file_path = SAVE_DIR / f"{file_id}_{filename}"
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
@@ -106,33 +106,34 @@ async def upload_file(
             "filename": filename,
             "title": title or filename,
             "description": description or "",
+            "category": "data",
             "file_path": str(file_path),
             "file_size": file_path.stat().st_size,
             "file_extension": file_extension,
-            "upload_time": datetime.now().isoformat(),
+            "save_time": datetime.now().isoformat(),
             "content_type": file.content_type
         }
         
-        uploaded_files_registry.append(file_info)
-        save_uploaded_files_registry()
+        saved_files_registry.append(file_info)
+        save_saved_files_registry()
         
         return {
-            "message": "File uploaded successfully",
+            "message": "File saved successfully",
             "file_id": file_id,
             "filename": filename,
             "size": file_info["file_size"]
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
 
 @app.get("/files/list")
 async def list_files(
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0)
 ):
-    """アップロードされたファイル一覧を取得"""
-    files = uploaded_files_registry.copy()
+    """保存されたファイル一覧を取得"""
+    files = saved_files_registry.copy()
     
     # ページネーション
     total = len(files)
@@ -424,12 +425,12 @@ async def download_file(file_id: str):
 @app.delete("/files/{file_id}")
 async def delete_file(file_id: str):
     """ファイルを削除"""
-    global uploaded_files_registry
+    global saved_files_registry
     
     # ファイル情報を検索
     file_info = None
     file_index = None
-    for i, f in enumerate(uploaded_files_registry):
+    for i, f in enumerate(saved_files_registry):
         if f["id"] == file_id:
             file_info = f
             file_index = i
@@ -445,8 +446,8 @@ async def delete_file(file_id: str):
             file_path.unlink()
         
         # レジストリから削除
-        uploaded_files_registry.pop(file_index)
-        save_uploaded_files_registry()
+        saved_files_registry.pop(file_index)
+        save_saved_files_registry()
         
         return {"message": "File deleted successfully", "file_id": file_id}
         
@@ -472,7 +473,7 @@ async def get_config():
             "data": "/files/{file_id}/data",
             "view": "/files/{file_id}/view",
             "download": "/files/{file_id}/download",
-            "upload": "/files/upload",
+            "save": "/files/upload",
             "list": "/files/list"
         }
     }
